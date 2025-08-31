@@ -150,7 +150,7 @@ export class DirectoryService implements IDirectoryService {
     basePath: string = ''
   ): Promise<void> {
     try {
-      for await (const [name, handle] of directoryHandle.entries()) {
+      for await (const [name, handle] of (directoryHandle as any).entries()) {
         const currentPath = basePath ? `${basePath}/${name}` : name;
 
         if (handle.kind === 'file') {

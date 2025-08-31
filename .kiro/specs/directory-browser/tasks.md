@@ -24,7 +24,12 @@
   - DirectoryService の単体テストを作成
   - _要件: 1.3, 2.1, 2.2, 2.3_
 
-- [ ] 3. CollapsiblePanel 汎用コンポーネントの実装
+- [x] 3. CollapsiblePanel 汎用コンポーネントの実装
+
+
+
+
+
   - CollapsiblePanel コンポーネントの基本構造を作成
   - 折りたたみ/展開アニメーションの実装
   - アクセシビリティ対応（ARIA属性、キーボードナビゲーション）
