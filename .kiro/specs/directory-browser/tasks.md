@@ -37,7 +37,12 @@
   - CollapsiblePanel の単体テストを作成
   - _要件: 4.1, 4.2, 4.5, 4.6, 5.5_
 
-- [ ] 4. DirectorySelector コンポーネントの実装
+- [x] 4. DirectorySelector コンポーネントの実装
+
+
+
+
+
   - DirectorySelector コンポーネントの基本構造を作成
   - ディレクトリ選択ボタンの実装
   - 選択されたディレクトリパスの表示機能
