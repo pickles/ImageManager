@@ -1,3 +1,7 @@
 // サービス層のエクスポート
-// このファイルは後のタスクで更新されます
-export {};
+export { FileService } from './FileService';
+export { MetadataService } from './MetadataService';
+export { ImageService } from './ImageService';
+
+// サービスインターフェースの再エクスポート
+export type { IFileService, IMetadataService, IImageService } from '../types/services';
