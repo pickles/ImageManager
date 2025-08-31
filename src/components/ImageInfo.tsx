@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ImageMetadata } from '../types/image';
 import './ImageInfo.css';
 
@@ -21,6 +21,7 @@ export interface ImageInfoProps {
  * - 4.4: ファイル形式の表示
  */
 export const ImageInfo: React.FC<ImageInfoProps> = ({ metadata }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   /**
    * ファイルサイズを人間が読みやすい形式に変換
    */
@@ -67,11 +68,21 @@ export const ImageInfo: React.FC<ImageInfoProps> = ({ metadata }) => {
     return (
       <div className="image-info" data-testid="image-info">
         <div className="image-info__header">
-          <h3>画像情報</h3>
+          <button
+            className="image-info__toggle"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            aria-expanded={!isCollapsed}
+            aria-controls="image-info-content"
+          >
+            <span className={`image-info__toggle-icon ${isCollapsed ? 'collapsed' : ''}`}>▼</span>
+            <h3>画像情報</h3>
+          </button>
         </div>
-        <div className="image-info__content">
-          <p className="image-info__no-data">画像が選択されていません</p>
-        </div>
+        {!isCollapsed && (
+          <div className="image-info__content" id="image-info-content">
+            <p className="image-info__no-data">画像が選択されていません</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -79,44 +90,54 @@ export const ImageInfo: React.FC<ImageInfoProps> = ({ metadata }) => {
   return (
     <div className="image-info" data-testid="image-info">
       <div className="image-info__header">
-        <h3>画像情報</h3>
+        <button
+          className="image-info__toggle"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          aria-expanded={!isCollapsed}
+          aria-controls="image-info-content"
+        >
+          <span className={`image-info__toggle-icon ${isCollapsed ? 'collapsed' : ''}`}>▼</span>
+          <h3>画像情報</h3>
+        </button>
       </div>
-      <div className="image-info__content">
-        <div className="image-info__item">
-          <span className="image-info__label">ファイル名:</span>
-          <span className="image-info__value" data-testid="file-name">
-            {metadata.fileName}
-          </span>
+      {!isCollapsed && (
+        <div className="image-info__content" id="image-info-content">
+          <div className="image-info__item">
+            <span className="image-info__label">ファイル名:</span>
+            <span className="image-info__value" data-testid="file-name">
+              {metadata.fileName}
+            </span>
+          </div>
+          
+          <div className="image-info__item">
+            <span className="image-info__label">ファイルサイズ:</span>
+            <span className="image-info__value" data-testid="file-size">
+              {formatFileSize(metadata.fileSize)}
+            </span>
+          </div>
+          
+          <div className="image-info__item">
+            <span className="image-info__label">解像度:</span>
+            <span className="image-info__value" data-testid="resolution">
+              {metadata.width} × {metadata.height} px
+            </span>
+          </div>
+          
+          <div className="image-info__item">
+            <span className="image-info__label">形式:</span>
+            <span className="image-info__value" data-testid="file-type">
+              {formatFileType(metadata.fileType)}
+            </span>
+          </div>
+          
+          <div className="image-info__item">
+            <span className="image-info__label">更新日時:</span>
+            <span className="image-info__value" data-testid="last-modified">
+              {formatDate(metadata.lastModified)}
+            </span>
+          </div>
         </div>
-        
-        <div className="image-info__item">
-          <span className="image-info__label">ファイルサイズ:</span>
-          <span className="image-info__value" data-testid="file-size">
-            {formatFileSize(metadata.fileSize)}
-          </span>
-        </div>
-        
-        <div className="image-info__item">
-          <span className="image-info__label">解像度:</span>
-          <span className="image-info__value" data-testid="resolution">
-            {metadata.width} × {metadata.height} px
-          </span>
-        </div>
-        
-        <div className="image-info__item">
-          <span className="image-info__label">形式:</span>
-          <span className="image-info__value" data-testid="file-type">
-            {formatFileType(metadata.fileType)}
-          </span>
-        </div>
-        
-        <div className="image-info__item">
-          <span className="image-info__label">更新日時:</span>
-          <span className="image-info__value" data-testid="last-modified">
-            {formatDate(metadata.lastModified)}
-          </span>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

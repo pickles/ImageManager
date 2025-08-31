@@ -90,8 +90,10 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
         alt={alt}
         className="image-display__image"
         style={{
-          maxWidth: `${maxWidth - 32}px`, // パディング分を引く
-          maxHeight: `${maxHeight - 32}px` // パディング分を引く
+          maxWidth: `${Math.max(100, maxWidth - 64)}px`, // パディングとボーダー分を引く
+          maxHeight: `${Math.max(100, maxHeight - 64)}px`, // パディングとボーダー分を引く
+          width: 'auto',
+          height: 'auto'
         }}
         onError={(e) => {
           console.error('画像の読み込みに失敗しました:', e);

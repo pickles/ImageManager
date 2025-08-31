@@ -1,22 +1,438 @@
+/* メインアプリケーションコンテナ */
 .App {
+  height: 100vh;
+  background-color: #f8fafc;
+  overflow: hidden;
+  position: relative;
+}
+
+.App--drag-over {
+  background-color: #e6f3ff;
+}
+
+/* メインコンテンツエリア */
+.App-main {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* ファイル選択画面 */
+.App-main--file-selector {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.App-file-selector-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ローディング画面 */
+.App-main--loading {
+  background-color: #f8fafc;
+}
+
+.App-loading-container {
   text-align: center;
 }
 
-.App-header {
-  background-color: #282c34;
-  padding: 20px;
+/* エラー画面 */
+.App-main--error {
+  background-color: #fef2f2;
+}
+
+.App-error-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 画像表示画面 */
+.App-main--image-view {
+  background-color: #ffffff;
+  padding: 0;
+  align-items: stretch;
+  width: 100vw;
+  height: 100vh;
+}
+
+.App-image-container {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  height: 100vh;
+  width: 100vw;
+  transition: grid-template-columns 0.3s ease;
+}
+
+.App-image-container--collapsed {
+  grid-template-columns: 1fr 0px;
+}
+
+.App-image-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  padding: 1rem;
+  overflow: hidden;
+  width: 100%;
+  height: 100vh;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.App-image-info {
+  background-color: #ffffff;
+  border-left: 1px solid #e2e8f0;
+  padding: 2rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 新しい画像選択ボタン */
+.App-new-image-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  border: none;
   border-radius: 8px;
-  margin-bottom: 20px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: auto;
 }
 
-.App-header h1 {
-  margin: 0 0 10px 0;
-  font-size: 2rem;
+.App-new-image-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-.App-header p {
+.App-new-image-button:active {
+  transform: translateY(0);
+}
+
+/* 情報パネル折りたたみトグルボタン */
+.App-info-toggle {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.App-info-toggle:hover {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.App-info-toggle:focus {
+  outline: 2px solid #3182ce;
+  outline-offset: 2px;
+}
+
+.App-info-toggle--collapsed {
+  right: 1rem;
+}
+
+.App-info-toggle-icon {
+  font-size: 14px;
+  color: #4a5568;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+}
+
+/* ドラッグアンドドロップオーバーレイ */
+.App-drag-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(102, 126, 234, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.App-drag-message {
+  text-align: center;
+  color: white;
+  padding: 2rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  max-width: 400px;
+  backdrop-filter: blur(8px);
+}
+
+.App-drag-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: bounce 1s infinite;
+}
+
+.App-drag-message h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.App-drag-message p {
   margin: 0;
-  font-size: 1.1rem;
-  opacity: 0.8;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 1024px) {
+  .App-image-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+  
+  .App-image-container--collapsed {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 0px;
+  }
+  
+  .App-image-display {
+    padding: 1rem;
+    height: calc(100vh - 300px); /* 情報パネル分の高さを引く */
+  }
+  
+  .App-image-container--collapsed .App-image-display {
+    height: 100vh;
+  }
+  
+  .App-image-info {
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+    max-height: 300px;
+    padding: 1.5rem;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  
+  .App-info-toggle {
+    top: 1rem;
+    right: 1rem;
+    transform: none;
+  }
+  
+  .App-info-toggle:hover {
+    transform: scale(1.05);
+  }
+}
+
+@media (max-width: 768px) {
+  .App-main {
+    padding: 0.5rem;
+  }
+  
+  .App-main--image-view {
+    padding: 0;
+  }
+  
+  .App-file-selector-container {
+    max-width: none;
+    padding: 1rem;
+  }
+  
+  .App-error-container {
+    max-width: none;
+    padding: 1rem;
+  }
+  
+  .App-image-display {
+    padding: 0.5rem;
+    height: calc(100vh - 250px); /* 情報パネル分の高さを引く */
+  }
+  
+  .App-image-container--collapsed .App-image-display {
+    height: 100vh;
+  }
+  
+  .App-image-info {
+    padding: 1rem;
+    max-height: 250px;
+  }
+  
+  .App-new-image-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .App-main {
+    padding: 0.25rem;
+  }
+  
+  .App-main--image-view {
+    padding: 0;
+  }
+  
+  .App-image-display {
+    height: calc(100vh - 200px); /* 情報パネル分の高さを引く */
+    padding: 0.25rem;
+  }
+  
+  .App-image-container--collapsed .App-image-display {
+    height: 100vh;
+  }
+  
+  .App-image-info {
+    max-height: 200px;
+    padding: 0.75rem;
+  }
+  
+  .App-info-toggle {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .App-info-toggle-icon {
+    font-size: 12px;
+  }
+}
+
+/* アクセシビリティ対応 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .App-image-container {
+    transition: none;
+  }
+  
+  .App-image-info {
+    transition: none;
+  }
+  
+  .App-info-toggle {
+    transition: none;
+  }
+  
+  .App-info-toggle-icon {
+    transition: none;
+  }
+  
+  .App-drag-overlay {
+    animation: none;
+  }
+  
+  .App-drag-icon {
+    animation: none;
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .App {
+    background-color: #1a1a1a;
+  }
+  
+  .App--drag-over {
+    background-color: #1e3a5f;
+  }
+  
+  .App-main--loading {
+    background-color: #1a1a1a;
+  }
+  
+  .App-main--error {
+    background-color: #2d1b1b;
+  }
+  
+  .App-main--image-view {
+    background-color: #1a1a1a;
+  }
+  
+  .App-image-display {
+    background-color: #2d2d2d;
+  }
+  
+  .App-image-info {
+    background-color: #1a1a1a;
+    border-left-color: #404040;
+    color: #e0e0e0;
+  }
+  
+  .App-info-toggle {
+    background: rgba(42, 42, 42, 0.9);
+    border-color: #404040;
+  }
+  
+  .App-info-toggle:hover {
+    background: rgba(42, 42, 42, 1);
+  }
+  
+  .App-info-toggle-icon {
+    color: #e0e0e0;
+  }
+  
+  .App-drag-overlay {
+    background: rgba(42, 42, 42, 0.9);
+  }
+  
+  .App-drag-message {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  @media (max-width: 1024px) {
+    .App-image-info {
+      border-top-color: #404040;
+    }
+  }
 }
