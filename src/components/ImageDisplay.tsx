@@ -39,6 +39,7 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
   alt = '選択された画像'
 }) => {
   const containerStyle = {
+    width: '100%',
     maxWidth: `${maxWidth}px`,
     maxHeight: `${maxHeight}px`
   };
@@ -88,6 +89,10 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
         src={imageUrl}
         alt={alt}
         className="image-display__image"
+        style={{
+          maxWidth: `${maxWidth - 32}px`, // パディング分を引く
+          maxHeight: `${maxHeight - 32}px` // パディング分を引く
+        }}
         onError={(e) => {
           console.error('画像の読み込みに失敗しました:', e);
         }}
