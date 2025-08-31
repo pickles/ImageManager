@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import { FileSelector, ImageDisplay } from './components';
-import { SUPPORTED_IMAGE_FORMATS } from './types/image';
+import { FileSelector, ImageDisplay, ImageInfo } from './components';
+import { SUPPORTED_IMAGE_FORMATS, ImageMetadata } from './types/image';
 
 /**
  * メインアプリケーションコンポーネント
@@ -12,6 +12,7 @@ function App() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [metadata, setMetadata] = useState<ImageMetadata | null>(null);
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
@@ -29,8 +30,27 @@ function App() {
     try {
       const url = URL.createObjectURL(file);
       setImageUrl(url);
-      setIsLoading(false);
-      console.log('Selected file:', file);
+      
+      // 画像メタデータの作成（モックデータとして実装）
+      const img = new Image();
+      img.onload = () => {
+        const imageMetadata: ImageMetadata = {
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type,
+          width: img.width,
+          height: img.height,
+          lastModified: new Date(file.lastModified)
+        };
+        setMetadata(imageMetadata);
+        setIsLoading(false);
+        console.log('Selected file:', file, 'Metadata:', imageMetadata);
+      };
+      img.onerror = () => {
+        setError('画像の読み込みに失敗しました');
+        setIsLoading(false);
+      };
+      img.src = url;
     } catch (err) {
       setError('画像の読み込みに失敗しました');
       setIsLoading(false);
@@ -58,36 +78,22 @@ function App() {
           <FileSelector onFileSelect={handleFileSelect} />
         </div>
         
-        <div style={{ marginBottom: '2rem' }}>
-          <ImageDisplay 
-            imageUrl={imageUrl}
-            isLoading={isLoading}
-            error={error}
-            maxWidth={900}
-            maxHeight={700}
-            alt={selectedFile ? selectedFile.name : undefined}
-          />
-        </div>
-        
-        {selectedFile && (
-          <div style={{ padding: '1rem', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
-            <h3>ファイル情報:</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-              <div>
-                <strong>名前:</strong> {selectedFile.name}
-              </div>
-              <div>
-                <strong>サイズ:</strong> {Math.round(selectedFile.size / 1024)} KB
-              </div>
-              <div>
-                <strong>タイプ:</strong> {selectedFile.type}
-              </div>
-              <div>
-                <strong>最終更新:</strong> {new Date(selectedFile.lastModified).toLocaleString()}
-              </div>
-            </div>
+        <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1 }}>
+            <ImageDisplay 
+              imageUrl={imageUrl}
+              isLoading={isLoading}
+              error={error}
+              maxWidth={900}
+              maxHeight={700}
+              alt={selectedFile ? selectedFile.name : undefined}
+            />
           </div>
-        )}
+          
+          <div style={{ minWidth: '300px' }}>
+            <ImageInfo metadata={metadata} />
+          </div>
+        </div>
       </main>
     </div>
   );

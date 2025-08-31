@@ -13,6 +13,9 @@ ImageManager/
 │   ├── App.tsx            # メインアプリケーションコンポーネント
 │   ├── main.tsx           # エントリーポイント
 │   └── index.css          # グローバルスタイル
+├── test-data/             # テスト用データ
+│   └── images/            # テスト用画像ファイル
+├── scripts/               # ユーティリティスクリプト
 ├── .kiro/                 # Kiro設定とSpec
 │   ├── steering/          # ステアリングファイル
 │   └── specs/             # 機能仕様書
@@ -31,6 +34,10 @@ ImageManager/
 - **utils/**: 共通操作のためのヘルパー関数とユーティリティ
 - **assets/**: 静的リソース（アイコン、デフォルト画像等）
 - **test/**: テスト設定とテストユーティリティ
+
+## テストデータ構成
+- **test-data/images/**: テスト用画像ファイル（PNG、JPEG、GIF、WebP形式）
+- **scripts/**: 画像生成スクリプトやその他のユーティリティスクリプト
 
 ## 命名規則
 - コンポーネントファイルとクラスにはPascalCaseを使用
