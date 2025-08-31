@@ -11,7 +11,12 @@
   - 基本的なインターフェースとenumを定義（SortOption, SortOrder含む）
   - _要件: 1.1, 2.1, 6.1_
 
-- [ ] 2. DirectoryService の実装
+- [x] 2. DirectoryService の実装
+
+
+
+
+
   - IDirectoryService インターフェースを定義
   - DirectoryService クラスの基本実装を作成
   - ディレクトリ選択機能の実装（File System Access API使用）
