@@ -44,12 +44,12 @@ function App() {
    * 要件 1.1, 5.1, 5.2 に対応
    */
   const handleFileSelect = (file: File) => {
-    // 状態をリセットしてローディング開始
+    // 状態をリセット
     setAppState(prev => ({
       ...prev,
       selectedFile: file,
       error: null,
-      isLoading: true,
+      isLoading: false,
       imageUrl: null,
       metadata: null
     }));
@@ -63,6 +63,12 @@ function App() {
       }));
       return;
     }
+
+    // ローディング開始
+    setAppState(prev => ({
+      ...prev,
+      isLoading: true
+    }));
 
     // 画像URLの作成
     try {
@@ -116,7 +122,11 @@ function App() {
   const handleErrorClear = () => {
     setAppState(prev => ({
       ...prev,
-      error: null
+      selectedFile: null,
+      error: null,
+      isLoading: false,
+      imageUrl: null,
+      metadata: null
     }));
   };
 

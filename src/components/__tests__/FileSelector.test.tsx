@@ -74,7 +74,7 @@ describe('FileSelector', () => {
       });
     });
 
-    it('サポートされていないファイル形式でエラーが表示される', async () => {
+    it('サポートされていないファイル形式でもコールバックが呼ばれる（App レベルでバリデーション）', async () => {
       render(<FileSelector onFileSelect={mockOnFileSelect} />);
       
       const file = createMockFile('test.txt', 'text/plain');
@@ -83,12 +83,11 @@ describe('FileSelector', () => {
       fireEvent.change(fileInput, { target: { files: [file] } });
       
       await waitFor(() => {
-        expect(screen.getByText(/サポートされていないファイル形式です/)).toBeInTheDocument();
-        expect(mockOnFileSelect).not.toHaveBeenCalled();
+        expect(mockOnFileSelect).toHaveBeenCalledWith(file);
       });
     });
 
-    it('ファイルサイズが大きすぎる場合にエラーが表示される', async () => {
+    it('ファイルサイズが大きすぎる場合でもコールバックが呼ばれる（App レベルでバリデーション）', async () => {
       const maxSize = 1024; // 1KB
       render(<FileSelector onFileSelect={mockOnFileSelect} maxFileSize={maxSize} />);
       
@@ -98,8 +97,7 @@ describe('FileSelector', () => {
       fireEvent.change(fileInput, { target: { files: [file] } });
       
       await waitFor(() => {
-        expect(screen.getByText(/ファイルサイズが大きすぎます/)).toBeInTheDocument();
-        expect(mockOnFileSelect).not.toHaveBeenCalled();
+        expect(mockOnFileSelect).toHaveBeenCalledWith(file);
       });
     });
   });
@@ -145,7 +143,7 @@ describe('FileSelector', () => {
       });
     });
 
-    it('無効なファイルがドロップされたときにエラーが表示される', async () => {
+    it('無効なファイルがドロップされてもコールバックが呼ばれる（App レベルでバリデーション）', async () => {
       render(<FileSelector onFileSelect={mockOnFileSelect} />);
       
       const file = createMockFile('invalid.txt', 'text/plain');
@@ -158,8 +156,7 @@ describe('FileSelector', () => {
       });
       
       await waitFor(() => {
-        expect(screen.getByText(/サポートされていないファイル形式です/)).toBeInTheDocument();
-        expect(mockOnFileSelect).not.toHaveBeenCalled();
+        expect(mockOnFileSelect).toHaveBeenCalledWith(file);
       });
     });
   });
@@ -202,7 +199,7 @@ describe('FileSelector', () => {
   });
 
   describe('カスタムプロパティ', () => {
-    it('カスタムacceptedFormatsが適用される', async () => {
+    it('カスタムacceptedFormatsが適用される（App レベルでバリデーション）', async () => {
       const customFormats = ['image/jpeg'];
       render(
         <FileSelector 
@@ -217,8 +214,7 @@ describe('FileSelector', () => {
       fireEvent.change(fileInput, { target: { files: [pngFile] } });
       
       await waitFor(() => {
-        expect(screen.getByText(/サポートされていないファイル形式です/)).toBeInTheDocument();
-        expect(mockOnFileSelect).not.toHaveBeenCalled();
+        expect(mockOnFileSelect).toHaveBeenCalledWith(pngFile);
       });
     });
 
@@ -236,8 +232,8 @@ describe('FileSelector', () => {
     });
   });
 
-  describe('エラーハンドリング', () => {
-    it('エラーメッセージが適切なrole属性を持つ', async () => {
+  describe('App レベルでのエラーハンドリング', () => {
+    it('FileSelector はエラー表示を行わない（App レベルで処理）', async () => {
       render(<FileSelector onFileSelect={mockOnFileSelect} />);
       
       const file = createMockFile('test.txt', 'text/plain');
@@ -245,34 +241,31 @@ describe('FileSelector', () => {
       
       fireEvent.change(fileInput, { target: { files: [file] } });
       
-      await waitFor(() => {
-        const errorElement = screen.getByRole('alert');
-        expect(errorElement).toBeInTheDocument();
-        expect(errorElement).toHaveTextContent(/サポートされていないファイル形式です/);
-      });
+      // FileSelector レベルではエラー表示されない
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(screen.queryByText(/サポートされていないファイル形式です/)).not.toBeInTheDocument();
+      
+      // ファイルは App に渡される
+      expect(mockOnFileSelect).toHaveBeenCalledWith(file);
     });
 
-    it('新しいファイルが選択されるとエラーがクリアされる', async () => {
+    it('すべてのファイルが App レベルに渡される', async () => {
       render(<FileSelector onFileSelect={mockOnFileSelect} />);
       
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
       
-      // 無効なファイルを選択してエラーを表示
+      // 無効なファイル
       const invalidFile = createMockFile('test.txt', 'text/plain');
       fireEvent.change(fileInput, { target: { files: [invalidFile] } });
       
-      await waitFor(() => {
-        expect(screen.getByText(/サポートされていないファイル形式です/)).toBeInTheDocument();
-      });
+      expect(mockOnFileSelect).toHaveBeenCalledWith(invalidFile);
       
-      // 有効なファイルを選択してエラーをクリア
+      // 有効なファイル
       const validFile = createMockFile('test.jpg', 'image/jpeg');
       fireEvent.change(fileInput, { target: { files: [validFile] } });
       
-      await waitFor(() => {
-        expect(screen.queryByText(/サポートされていないファイル形式です/)).not.toBeInTheDocument();
-        expect(mockOnFileSelect).toHaveBeenCalledWith(validFile);
-      });
+      expect(mockOnFileSelect).toHaveBeenCalledWith(validFile);
+      expect(mockOnFileSelect).toHaveBeenCalledTimes(2);
     });
   });
 });

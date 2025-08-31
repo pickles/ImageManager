@@ -57,9 +57,8 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
    * ファイル選択処理
    */
   const handleFileSelect = (file: File) => {
-    if (validateFile(file)) {
-      onFileSelect(file);
-    }
+    // App レベルでのバリデーションに委ねるため、常にファイルを渡す
+    onFileSelect(file);
   };
 
   /**
@@ -146,11 +145,7 @@ export const FileSelector: React.FC<FileSelectorProps> = ({
         </div>
       </div>
 
-      {error && (
-        <div className="file-selector__error" role="alert">
-          {error}
-        </div>
-      )}
+      {/* エラー表示は App レベルで処理されるため、ここでは表示しない */}
 
       <input
         ref={fileInputRef}
