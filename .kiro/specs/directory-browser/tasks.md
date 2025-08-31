@@ -69,7 +69,12 @@
   - ImageFileList の単体テストを作成（ソート機能含む）
   - _要件: 2.2, 2.4, 2.5, 2.7, 3.1, 3.2, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6_
 
-- [ ] 6. DirectoryBrowser メインコンテナの実装
+- [x] 6. DirectoryBrowser メインコンテナの実装
+
+
+
+
+
   - DirectoryBrowser コンポーネントの基本構造を作成
   - 状態管理の実装（selectedDirectory, imageFiles, isLoading, error, sortBy, sortOrder）
   - ソート状態管理とファイル一覧のソート処理
