@@ -1,0 +1,141 @@
+/* ImageDisplayコンポーネントのスタイル */
+
+.image-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  background-color: #fafafa;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 画像表示 */
+.image-display__image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain; /* アスペクト比を維持しながらフィット（要件 3.3） */
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* プレースホルダー表示 */
+.image-display__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  text-align: center;
+  padding: 2rem;
+}
+
+.image-display__placeholder-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.image-display__placeholder-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* ローディング状態 */
+.image-display__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  text-align: center;
+  padding: 2rem;
+}
+
+.image-display__loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.image-display__loading-text {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* スピナーアニメーション */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* エラー状態 */
+.image-display__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #dc3545;
+  text-align: center;
+  padding: 2rem;
+  background-color: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 4px;
+  margin: 1rem;
+}
+
+.image-display__error-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.image-display__error-message {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .image-display {
+    min-height: 250px;
+  }
+  
+  .image-display__placeholder-icon,
+  .image-display__error-icon {
+    font-size: 2rem;
+  }
+  
+  .image-display__placeholder-text,
+  .image-display__error-message,
+  .image-display__loading-text {
+    font-size: 0.9rem;
+  }
+  
+  .image-display__loading-spinner {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* ホバー効果（画像が表示されている場合） */
+.image-display:has(.image-display__image):hover {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+}
+
+/* フォーカス状態（アクセシビリティ） */
+.image-display:focus-within {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}

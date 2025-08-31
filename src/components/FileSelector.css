@@ -1,0 +1,164 @@
+/* FileSelectorコンポーネントのスタイル */
+.file-selector {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.file-selector__drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #fafafa;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-selector__drop-zone:hover {
+  border-color: #007bff;
+  background-color: #f0f8ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.file-selector__drop-zone:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.file-selector__drop-zone--drag-over {
+  border-color: #28a745;
+  background-color: #f0fff4;
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.2);
+}
+
+.file-selector__drop-zone--disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background-color: #f5f5f5;
+}
+
+.file-selector__drop-zone--disabled:hover {
+  border-color: #ccc;
+  background-color: #f5f5f5;
+  transform: none;
+  box-shadow: none;
+}
+
+.file-selector__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.file-selector__icon {
+  font-size: 3rem;
+  opacity: 0.7;
+  transition: transform 0.3s ease;
+}
+
+.file-selector__drop-zone:hover .file-selector__icon {
+  transform: scale(1.1);
+}
+
+.file-selector__drop-zone--drag-over .file-selector__icon {
+  transform: scale(1.2);
+}
+
+.file-selector__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-selector__primary-text {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.file-selector__secondary-text {
+  font-size: 1rem;
+  color: #666;
+  margin: 0;
+}
+
+.file-selector__format-text {
+  font-size: 0.875rem;
+  color: #888;
+  margin: 0;
+}
+
+.file-selector__error {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  color: #721c24;
+  font-size: 0.875rem;
+}
+
+.file-selector__input {
+  display: none;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .file-selector__drop-zone {
+    padding: 1.5rem;
+    min-height: 150px;
+  }
+
+  .file-selector__icon {
+    font-size: 2.5rem;
+  }
+
+  .file-selector__primary-text {
+    font-size: 1.1rem;
+  }
+
+  .file-selector__secondary-text {
+    font-size: 0.9rem;
+  }
+}
+
+/* アクセシビリティ対応 */
+@media (prefers-reduced-motion: reduce) {
+  .file-selector__drop-zone,
+  .file-selector__icon {
+    transition: none;
+  }
+
+  .file-selector__drop-zone:hover,
+  .file-selector__drop-zone--drag-over {
+    transform: none;
+  }
+}
+
+/* ハイコントラストモード対応 */
+@media (prefers-contrast: high) {
+  .file-selector__drop-zone {
+    border-color: #000;
+    background-color: #fff;
+  }
+
+  .file-selector__drop-zone:hover {
+    border-color: #000;
+    background-color: #f0f0f0;
+  }
+
+  .file-selector__drop-zone--drag-over {
+    border-color: #000;
+    background-color: #e0e0e0;
+  }
+}
