@@ -1,0 +1,61 @@
+/**
+ * DirectoryBrowser スタイル定義
+ * 基本的なレイアウトとスタイルを定義（詳細実装は後のタスクで行う）
+ */
+
+.directory-browser {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--background-color, #ffffff);
+  border-right: 1px solid var(--border-color, #e0e0e0);
+}
+
+.directory-selector {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.image-file-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.collapsible-panel {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* レスポンシブ対応の基本設定 */
+@media (max-width: 768px) {
+  .directory-browser {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .directory-browser--expanded {
+    transform: translateX(0);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .directory-browser {
+    width: 300px;
+    min-width: 250px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .directory-browser {
+    width: 350px;
+    min-width: 300px;
+    max-width: 500px;
+  }
+}

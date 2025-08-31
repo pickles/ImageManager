@@ -8,6 +8,8 @@ import {
   ErrorDisplay 
 } from './components';
 import { SUPPORTED_IMAGE_FORMATS, ImageMetadata, ImageDisplayState } from './types/image';
+import { FileService } from './services/FileService';
+import { MetadataService } from './services/MetadataService';
 
 /**
  * メインアプリケーションコンポーネント
@@ -39,52 +41,45 @@ function App() {
   // 個別の状態も保持（既存のコンポーネントとの互換性のため）
   const { selectedFile, imageUrl, metadata, isLoading, error } = appState;
 
+  // サービスのインスタンス
+  const fileService = new FileService();
+  const metadataService = new MetadataService();
+
   /**
    * ファイル選択時のハンドラー
-   * 要件 1.1, 5.1, 5.2 に対応
+   * FileServiceを使用した実際のファイル処理機能の統合
+   * 要件 1.1, 1.2, 1.3, 5.1, 5.2 に対応
    */
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
     // 状態をリセット
     setAppState(prev => ({
       ...prev,
       selectedFile: file,
       error: null,
-      isLoading: false,
+      isLoading: true, // ローディング開始
       imageUrl: null,
       metadata: null
     }));
 
-    // ファイル形式の検証
-    if (!SUPPORTED_IMAGE_FORMATS.includes(file.type as any)) {
-      setAppState(prev => ({
-        ...prev,
-        error: `サポートされていないファイル形式です: ${file.type}`,
-        isLoading: false
-      }));
-      return;
-    }
-
-    // ローディング開始
-    setAppState(prev => ({
-      ...prev,
-      isLoading: true
-    }));
-
-    // 画像URLの作成
     try {
-      const url = URL.createObjectURL(file);
+      // FileServiceを使用したファイルバリデーション
+      const isValid = await fileService.validateImageFile(file);
       
-      // 画像メタデータの作成（モックデータとして実装）
-      const img = new Image();
-      img.onload = () => {
-        const imageMetadata: ImageMetadata = {
-          fileName: file.name,
-          fileSize: file.size,
-          fileType: file.type,
-          width: img.width,
-          height: img.height,
-          lastModified: new Date(file.lastModified)
-        };
+      if (!isValid) {
+        setAppState(prev => ({
+          ...prev,
+          error: 'ファイルのバリデーションに失敗しました',
+          isLoading: false
+        }));
+        return;
+      }
+
+      // FileServiceを使用した画像URLの作成
+      const url = fileService.createImageUrl(file);
+      
+      // MetadataServiceを使用した画像メタデータの抽出
+      try {
+        const imageMetadata = await metadataService.extractMetadata(file);
         
         setAppState(prev => ({
           ...prev,
@@ -94,25 +89,23 @@ function App() {
         }));
         
         console.log('Selected file:', file, 'Metadata:', imageMetadata);
-      };
-      
-      img.onerror = () => {
+      } catch (metadataError) {
+        console.error('メタデータ抽出エラー:', metadataError);
         setAppState(prev => ({
           ...prev,
-          error: '画像の読み込みに失敗しました',
+          error: 'メタデータの抽出に失敗しました',
           isLoading: false
         }));
-        URL.revokeObjectURL(url); // エラー時はURLを解放
-      };
-      
-      img.src = url;
+        fileService.revokeImageUrl(url); // エラー時はFileServiceを使用してURLを解放
+      }
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '画像の読み込みに失敗しました';
       setAppState(prev => ({
         ...prev,
-        error: '画像の読み込みに失敗しました',
+        error: errorMessage,
         isLoading: false
       }));
-      console.error('Error creating image URL:', err);
+      console.error('Error processing file:', err);
     }
   };
 
@@ -179,9 +172,9 @@ function App() {
     const imageFile = files.find(file => file.type.startsWith('image/'));
     
     if (imageFile) {
-      // 既存の画像URLをクリーンアップ
+      // 既存の画像URLをFileServiceを使用してクリーンアップ
       if (imageUrl) {
-        URL.revokeObjectURL(imageUrl);
+        fileService.revokeImageUrl(imageUrl);
       }
       handleFileSelect(imageFile);
     }
@@ -214,14 +207,14 @@ function App() {
     };
   }, []);
 
-  // クリーンアップ: コンポーネントがアンマウントされる際にURLを解放
+  // クリーンアップ: コンポーネントがアンマウントされる際にFileServiceを使用してURLを解放
   useEffect(() => {
     return () => {
       if (imageUrl) {
-        URL.revokeObjectURL(imageUrl);
+        fileService.revokeImageUrl(imageUrl);
       }
     };
-  }, [imageUrl]);
+  }, [imageUrl, fileService]);
 
   // ウィンドウサイズに基づく画像の最大サイズを計算（windowSizeに依存）
   const getImageMaxSize = () => {
@@ -313,6 +306,8 @@ function App() {
                 maxWidth={imageMaxWidth}
                 maxHeight={imageMaxHeight}
                 alt={selectedFile.name}
+                originalWidth={metadata?.width}
+                originalHeight={metadata?.height}
               />
               
               {/* 折りたたみトグルボタン */}

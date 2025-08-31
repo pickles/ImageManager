@@ -9,6 +9,8 @@
     "build": "tsc && vite build",
     "test": "vitest --run",
     "test:watch": "vitest",
+    "test:performance": "node scripts/run-performance-tests.js",
+    "test:performance:watch": "vitest --run src/test/performance.test.ts src/components/__tests__/performance.test.tsx --reporter=verbose",
     "preview": "vite preview"
   },
   "dependencies": {
