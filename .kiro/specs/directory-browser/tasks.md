@@ -97,7 +97,13 @@
   - レスポンシブ動作のテスト作成
   - _要件: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 8. App.tsx との統合
+- [x] 8. App.tsx との統合
+
+
+
+
+
+
   - App.tsx にDirectoryBrowser の状態管理を追加
   - 既存のhandleFileSelect との統合
   - CSS Grid レイアウトの適用

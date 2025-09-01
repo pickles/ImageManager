@@ -6,13 +6,14 @@
 .collapsible-panel {
   position: relative;
   display: flex;
+  flex-direction: row;
   height: 100%;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 左側折りたたみ（デフォルト） */
 .collapsible-panel--left {
-  flex-direction: row;
+  flex-direction: row !important;
 }
 
 .collapsible-panel--left .collapsible-panel__toggle {
@@ -46,16 +47,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  min-width: 32px;
+  width: 20px;
+  min-width: 20px;
   height: 100%;
   background: #f8f9fa;
   border: none;
   cursor: pointer;
-  padding: 8px 4px;
+  padding: 8px 2px;
   transition: all 0.2s ease;
   position: relative;
-  z-index: 10;
+  z-index: 100;
+  border-left: 1px solid #e0e0e0;
 }
 
 .collapsible-panel__toggle:hover {
@@ -74,10 +76,10 @@
 
 /* トグルアイコン */
 .collapsible-panel__toggle-icon {
-  font-size: 12px;
+  font-size: 10px;
   color: #6c757d;
   transition: transform 0.2s ease;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .collapsible-panel__toggle:hover .collapsible-panel__toggle-icon {
@@ -89,14 +91,14 @@
 .collapsible-panel__title {
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  font-size: 12px;
+  font-size: 10px;
   color: #6c757d;
   font-weight: 500;
   letter-spacing: 0.5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-height: 120px;
+  max-height: 100px;
 }
 
 /* コンテンツエリア */
@@ -107,6 +109,8 @@
   background: #ffffff;
   border: 1px solid #e0e0e0;
   border-right: none;
+  position: relative;
+  z-index: 1;
 }
 
 .collapsible-panel--right .collapsible-panel__content {
@@ -131,8 +135,9 @@
 
 /* 折りたたみ状態 */
 .collapsible-panel--collapsed .collapsible-panel__content {
-  width: 0;
-  min-width: 0;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
   opacity: 0;
   transform: translateX(-100%);
   padding: 0;

@@ -102,3 +102,6 @@ jspm_packages/
 
 # Test data (generated files)
 test-data/
+
+# Server configuration (contains local paths)
+server/config/directories.ts

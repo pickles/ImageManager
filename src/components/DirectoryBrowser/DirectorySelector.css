@@ -169,6 +169,30 @@
   line-height: 1.4;
 }
 
+/* 開発環境情報 */
+.directory-selector__dev-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #e6f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 0.375rem;
+  color: #0066cc;
+}
+
+.directory-selector__info-icon {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.directory-selector__dev-message {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
   .directory-selector {

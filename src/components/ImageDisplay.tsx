@@ -132,8 +132,13 @@ export const ImageDisplay: React.FC<ImageDisplayProps> = ({
           maxWidth: displaySize ? undefined : `${Math.max(100, maxWidth - 64)}px`,
           maxHeight: displaySize ? undefined : `${Math.max(100, maxHeight - 64)}px`,
         }}
+        onLoad={() => {
+          console.log('画像の読み込み成功:', imageUrl);
+        }}
         onError={(e) => {
           console.error('画像の読み込みに失敗しました:', e);
+          console.error('失敗したURL:', imageUrl);
+          console.error('画像要素:', e.target);
         }}
       />
     </div>

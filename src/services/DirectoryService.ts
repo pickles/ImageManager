@@ -64,6 +64,7 @@ export class DirectoryService implements IDirectoryService {
   private readonly _supportedFormats = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
   private readonly _supportedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
   private _directoryHandle: FileSystemDirectoryHandle | null = null;
+  private _currentDirectory: string | null = null;
 
   /**
    * File System Access API がサポートされているかチェック
@@ -74,10 +75,17 @@ export class DirectoryService implements IDirectoryService {
 
   /**
    * ディレクトリ選択ダイアログを表示
+   * 開発環境では固定ディレクトリを使用
    */
   async selectDirectory(): Promise<string | null> {
     try {
-      // File System Access API のサポートチェック
+      // 開発環境では固定ディレクトリを使用
+      if (import.meta.env.DEV) {
+        this._currentDirectory = 'D:\\tools\\StabilityMatrix\\Data\\Images\\Text2Img\\2025-09-01\\';
+        return 'Text2Img/2025-09-01';
+      }
+
+      // 本番環境では File System Access API を使用
       if (!this.isSupported()) {
         throw new DirectoryServiceError(
           DirectoryBrowserErrorType.BROWSER_NOT_SUPPORTED,
@@ -121,8 +129,21 @@ export class DirectoryService implements IDirectoryService {
   /**
    * 指定ディレクトリ内の画像ファイルを取得
    */
-  async getImageFiles(directoryHandle: FileSystemDirectoryHandle): Promise<ImageFileInfo[]> {
+  async getImageFiles(directoryHandle?: FileSystemDirectoryHandle): Promise<ImageFileInfo[]> {
     try {
+      // 開発環境ではAPIを使用
+      if (import.meta.env.DEV && this._currentDirectory) {
+        return await this._getImageFilesFromAPI();
+      }
+
+      // 本番環境では File System Access API を使用
+      if (!directoryHandle) {
+        throw new DirectoryServiceError(
+          DirectoryBrowserErrorType.DIRECTORY_ACCESS_DENIED,
+          'ディレクトリハンドルが指定されていません。'
+        );
+      }
+
       const imageFiles: ImageFileInfo[] = [];
 
       // ディレクトリ内のファイルを再帰的に検索
@@ -197,6 +218,74 @@ export class DirectoryService implements IDirectoryService {
   private _isImageFile(fileName: string): boolean {
     const extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
     return this._supportedExtensions.includes(extension);
+  }
+
+  /**
+   * APIから画像ファイル一覧を取得（開発環境用）
+   */
+  private async _getImageFilesFromAPI(): Promise<ImageFileInfo[]> {
+    try {
+      const response = await fetch('/api/images');
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      return data.files.map((fileData: any) => {
+        // File オブジェクトを模擬（APIファイル用の特別なプロパティを追加）
+        const mockFile = {
+          name: fileData.name,
+          size: fileData.size,
+          lastModified: fileData.lastModified,
+          type: this._getMimeType(fileData.name),
+          // APIファイルであることを示すフラグ
+          _isApiFile: true,
+          _apiUrl: fileData.url,
+          // Blob インターフェースの実装
+          arrayBuffer: async () => {
+            const fileResponse = await fetch(fileData.url);
+            return fileResponse.arrayBuffer();
+          },
+          slice: () => new Blob(),
+          stream: () => new ReadableStream(),
+          text: async () => ''
+        } as File & { _isApiFile: boolean; _apiUrl: string };
+
+        const imageFileInfo: ImageFileInfo = {
+          file: mockFile,
+          name: fileData.name,
+          size: fileData.size,
+          lastModified: new Date(fileData.lastModified),
+          createdDate: new Date(fileData.lastModified),
+          path: fileData.name,
+          thumbnailUrl: fileData.url // APIのURLを直接使用
+        };
+
+        return imageFileInfo;
+      });
+    } catch (error) {
+      throw new DirectoryServiceError(
+        DirectoryBrowserErrorType.FILE_SCAN_FAILED,
+        'APIからのファイル取得中にエラーが発生しました。',
+        error instanceof Error ? error : new Error(String(error))
+      );
+    }
+  }
+
+  /**
+   * ファイル名からMIMEタイプを取得
+   */
+  private _getMimeType(fileName: string): string {
+    const extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.') + 1);
+    const mimeTypes: Record<string, string> = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'webp': 'image/webp'
+    };
+    return mimeTypes[extension] || 'application/octet-stream';
   }
 
   /**

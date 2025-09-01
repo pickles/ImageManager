@@ -48,7 +48,7 @@ export interface DirectoryBrowserState {
 
 // DirectorySelector コンポーネントのProps（要件1.1）
 export interface DirectorySelectorProps {
-  onDirectorySelect: (directory: string) => void;
+  onDirectorySelect: (directory: string, directoryHandle: FileSystemDirectoryHandle) => void;
   selectedDirectory: string | null;
   disabled?: boolean;
 }

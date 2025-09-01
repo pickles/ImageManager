@@ -75,12 +75,18 @@
 /* DirectoryBrowser統合時のCSS Grid レイアウト（要件5.1, 5.2, 5.3, 5.4） */
 .App-main--with-directory-browser {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-areas: "directory main info";
+  grid-template-columns: 350px 1fr;
+  grid-template-areas: "directory main";
   height: 100vh;
   width: 100vw;
   gap: 0;
   padding: 0;
+}
+
+/* 画像選択時は3カラムレイアウト */
+.App-main--with-directory-browser.App-main--image-selected {
+  grid-template-columns: 350px 1fr 400px;
+  grid-template-areas: "directory main info";
 }
 
 .App-main--with-directory-browser .App-directory-browser {
@@ -97,14 +103,18 @@
 
 /* DirectoryBrowser折りたたみ状態 */
 .App-main--with-directory-browser.App-main--directory-collapsed {
-  grid-template-columns: 0 1fr auto;
+  grid-template-columns: 0 1fr;
 }
 
-.App-main--with-directory-browser.App-main--info-collapsed {
-  grid-template-columns: auto 1fr 0;
+.App-main--with-directory-browser.App-main--image-selected.App-main--directory-collapsed {
+  grid-template-columns: 0 1fr 400px;
 }
 
-.App-main--with-directory-browser.App-main--both-collapsed {
+.App-main--with-directory-browser.App-main--image-selected.App-main--info-collapsed {
+  grid-template-columns: 350px 1fr 0;
+}
+
+.App-main--with-directory-browser.App-main--image-selected.App-main--both-collapsed {
   grid-template-columns: 0 1fr 0;
 }
 
@@ -272,18 +282,26 @@
 /* デスクトップ: 1025px以上（要件5.4） */
 @media (min-width: 1025px) {
   .App-main--with-directory-browser {
+    grid-template-columns: 350px 1fr;
+  }
+  
+  .App-main--with-directory-browser.App-main--image-selected {
     grid-template-columns: 350px 1fr 400px;
   }
   
   .App-main--with-directory-browser.App-main--directory-collapsed {
+    grid-template-columns: 0 1fr;
+  }
+  
+  .App-main--with-directory-browser.App-main--image-selected.App-main--directory-collapsed {
     grid-template-columns: 0 1fr 400px;
   }
   
-  .App-main--with-directory-browser.App-main--info-collapsed {
+  .App-main--with-directory-browser.App-main--image-selected.App-main--info-collapsed {
     grid-template-columns: 350px 1fr 0;
   }
   
-  .App-main--with-directory-browser.App-main--both-collapsed {
+  .App-main--with-directory-browser.App-main--image-selected.App-main--both-collapsed {
     grid-template-columns: 0 1fr 0;
   }
 }
@@ -292,6 +310,10 @@
 @media (min-width: 769px) and (max-width: 1024px) {
   .App-main--with-directory-browser {
     grid-template-columns: 300px 1fr;
+    grid-template-areas: "directory main";
+  }
+  
+  .App-main--with-directory-browser.App-main--image-selected {
     grid-template-rows: 1fr auto;
     grid-template-areas: 
       "directory main"
@@ -300,19 +322,23 @@
   
   .App-main--with-directory-browser.App-main--directory-collapsed {
     grid-template-columns: 0 1fr;
+    grid-template-areas: "main main";
+  }
+  
+  .App-main--with-directory-browser.App-main--image-selected.App-main--directory-collapsed {
     grid-template-areas: 
       "main main"
       "info info";
   }
   
-  .App-main--with-directory-browser.App-main--info-collapsed {
+  .App-main--with-directory-browser.App-main--image-selected.App-main--info-collapsed {
     grid-template-areas: 
       "directory main"
       "directory main";
     grid-template-rows: 1fr;
   }
   
-  .App-main--with-directory-browser .App-image-info {
+  .App-main--with-directory-browser.App-main--image-selected .App-image-info {
     border-left: none;
     border-top: 1px solid #e2e8f0;
     max-height: 300px;

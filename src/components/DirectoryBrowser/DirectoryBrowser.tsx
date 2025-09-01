@@ -30,23 +30,51 @@ const DirectoryBrowser: React.FC<DirectoryBrowserProps> = ({
   // レスポンシブ対応の状態管理（要件5.1, 5.2, 5.5）
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
+
+
   // DirectoryService インスタンス
   const [directoryService] = useState(() => new DirectoryService());
 
+  // 開発環境での自動ディレクトリ読み込み
+  useEffect(() => {
+    const loadDevDirectory = async () => {
+      if (import.meta.env.DEV && !selectedDirectory) {
+        try {
+          const directoryPath = await directoryService.selectDirectory();
+          if (directoryPath) {
+            setSelectedDirectory(directoryPath);
+            setIsLoading(true);
+            setError(null);
+            
+            const files = await directoryService.getImageFiles();
+            setImageFiles(files);
+            setError(null);
+          }
+        } catch (err) {
+          if (err instanceof DirectoryServiceError) {
+            setError(err.message);
+          } else if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError('ディレクトリの読み込み中に予期しないエラーが発生しました。');
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadDevDirectory();
+  }, [directoryService, selectedDirectory]);
+
   // ディレクトリ選択ハンドラー（要件1.1）
-  const handleDirectorySelect = useCallback(async (directoryPath: string) => {
+  const handleDirectorySelect = useCallback(async (directoryPath: string, directoryHandle?: FileSystemDirectoryHandle) => {
     setSelectedDirectory(directoryPath);
     setIsLoading(true);
     setError(null);
     setImageFiles([]);
 
     try {
-      // 現在のディレクトリハンドルを取得
-      const directoryHandle = directoryService.getCurrentDirectoryHandle();
-      if (!directoryHandle) {
-        throw new Error('ディレクトリハンドルが取得できませんでした。');
-      }
-
       // 画像ファイルを取得（要件2.1, 2.2）
       const files = await directoryService.getImageFiles(directoryHandle);
       setImageFiles(files);
@@ -125,7 +153,8 @@ const DirectoryBrowser: React.FC<DirectoryBrowserProps> = ({
   }, [isCollapsed]);
 
   // モバイル用のコンテンツ（要件5.1, 5.2）
-  const renderMobileContent = () => (
+  const renderMobileContent = () => {
+    return (
     <div 
       className={`directory-browser ${className} ${!isCollapsed ? 'directory-browser--expanded' : 'directory-browser--collapsed'}`}
       role="navigation"
@@ -188,10 +217,12 @@ const DirectoryBrowser: React.FC<DirectoryBrowserProps> = ({
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   // デスクトップ・タブレット用のコンテンツ（要件5.3, 5.4）
-  const renderDesktopContent = () => (
+  const renderDesktopContent = () => {
+    return (
     <CollapsiblePanel
       isCollapsed={isCollapsed}
       onToggle={onToggleCollapse}
@@ -246,7 +277,8 @@ const DirectoryBrowser: React.FC<DirectoryBrowserProps> = ({
         )}
       </div>
     </CollapsiblePanel>
-  );
+    );
+  };
 
   // レスポンシブ対応（要件5.1, 5.2, 5.3, 5.4, 5.5）
   return isMobile ? renderMobileContent() : renderDesktopContent();

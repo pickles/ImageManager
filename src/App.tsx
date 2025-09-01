@@ -7,6 +7,7 @@ import {
   LoadingIndicator, 
   ErrorDisplay 
 } from './components';
+import { DirectoryBrowser } from './components/DirectoryBrowser';
 import { SUPPORTED_IMAGE_FORMATS, ImageMetadata, ImageDisplayState } from './types/image';
 import { FileService } from './services/FileService';
 import { MetadataService } from './services/MetadataService';
@@ -35,6 +36,9 @@ function App() {
   // 右ペインの折りたたみ状態
   const [isInfoPanelCollapsed, setIsInfoPanelCollapsed] = useState(false);
 
+  // 左ペイン（DirectoryBrowser）の折りたたみ状態（要件4.1, 4.2）
+  const [isDirectoryBrowserCollapsed, setIsDirectoryBrowserCollapsed] = useState(false);
+
   // ドラッグオーバー状態
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -48,6 +52,7 @@ function App() {
   /**
    * ファイル選択時のハンドラー
    * FileServiceを使用した実際のファイル処理機能の統合
+   * DirectoryBrowserからの選択も統合（要件3.3, 3.4）
    * 要件 1.1, 1.2, 1.3, 5.1, 5.2 に対応
    */
   const handleFileSelect = async (file: File) => {
@@ -63,16 +68,7 @@ function App() {
 
     try {
       // FileServiceを使用したファイルバリデーション
-      const isValid = await fileService.validateImageFile(file);
-      
-      if (!isValid) {
-        setAppState(prev => ({
-          ...prev,
-          error: 'ファイルのバリデーションに失敗しました',
-          isLoading: false
-        }));
-        return;
-      }
+      await fileService.validateImageFile(file);
 
       // FileServiceを使用した画像URLの作成
       const url = fileService.createImageUrl(file);
@@ -220,13 +216,15 @@ function App() {
   const getImageMaxSize = () => {
     const { width: windowWidth, height: windowHeight } = windowSize;
     
-    // サイドバーとパディングを考慮した計算
-    // 折りたたまれている場合はサイドバー幅を0にする
+    // DirectoryBrowserとサイドバーとパディングを考慮した計算
+    // 折りたたまれている場合は幅を0にする
+    const directoryBrowserWidth = (windowWidth > 768 && !isDirectoryBrowserCollapsed) ? 
+      (windowWidth > 1024 ? 350 : 300) : 0;
     const sidebarWidth = (windowWidth > 1024 && !isInfoPanelCollapsed) ? 400 : 0;
     const padding = windowWidth > 768 ? 32 : 16; // パディング（border含む）
     const infoHeight = (windowWidth <= 1024 && !isInfoPanelCollapsed) ? 300 : 0; // モバイルでは情報セクションの高さを考慮
     
-    const maxWidth = windowWidth - sidebarWidth - padding;
+    const maxWidth = windowWidth - directoryBrowserWidth - sidebarWidth - padding;
     const maxHeight = windowHeight - infoHeight - padding;
     
     return {
@@ -255,50 +253,55 @@ function App() {
         </div>
       )}
 
-      {/* 画像が選択されていない場合：ファイル選択画面 */}
-      {!selectedFile && !isLoading && (
-        <main className="App-main App-main--file-selector">
-          <div className="App-file-selector-container">
-            <FileSelector 
-              onFileSelect={handleFileSelect}
-              disabled={isLoading}
-            />
-          </div>
-        </main>
-      )}
+      {/* メインレイアウト（DirectoryBrowser統合） */}
+      <main className={`App-main App-main--image-view App-main--with-directory-browser ${
+        selectedFile && imageUrl && !isLoading && !error ? 'App-main--image-selected' : ''
+      } ${
+        isDirectoryBrowserCollapsed ? 'App-main--directory-collapsed' : ''
+      } ${
+        isInfoPanelCollapsed ? 'App-main--info-collapsed' : ''
+      } ${
+        isDirectoryBrowserCollapsed && isInfoPanelCollapsed ? 'App-main--both-collapsed' : ''
+      }`}>
+        {/* DirectoryBrowser（左ペイン）- 要件1.1, 4.1, 4.2 */}
+        <div className="App-directory-browser">
+          {console.log('Rendering DirectoryBrowser in App.tsx')}
+          <DirectoryBrowser
+            onFileSelect={handleFileSelect}
+            selectedFile={selectedFile}
+            isCollapsed={isDirectoryBrowserCollapsed}
+            onToggleCollapse={() => setIsDirectoryBrowserCollapsed(!isDirectoryBrowserCollapsed)}
+          />
+        </div>
 
-      {/* ローディング状態 */}
-      {isLoading && (
-        <main className="App-main App-main--loading">
-          <div className="App-loading-container">
-            <LoadingIndicator
-              isVisible={isLoading}
-              message="画像を読み込み中..."
-              size="large"
-            />
-          </div>
-        </main>
-      )}
+        {/* メイン表示エリア */}
+        <div className="App-image-display">
+          {/* ローディング状態 */}
+          {isLoading && (
+            <div className="App-loading-container">
+              <LoadingIndicator
+                isVisible={isLoading}
+                message="画像を読み込み中..."
+                size="large"
+              />
+            </div>
+          )}
 
-      {/* エラー状態 */}
-      {error && (
-        <main className="App-main App-main--error">
-          <div className="App-error-container">
-            <ErrorDisplay
-              error={error}
-              onRetry={handleRetry}
-              onClear={handleErrorClear}
-              showRetry={!!selectedFile}
-            />
-          </div>
-        </main>
-      )}
+          {/* エラー状態 */}
+          {error && (
+            <div className="App-error-container">
+              <ErrorDisplay
+                error={error}
+                onRetry={handleRetry}
+                onClear={handleErrorClear}
+                showRetry={!!selectedFile}
+              />
+            </div>
+          )}
 
-      {/* 画像が選択されている場合：画像表示画面 */}
-      {selectedFile && imageUrl && !isLoading && !error && (
-        <main className="App-main App-main--image-view">
-          <div className={`App-image-container ${isInfoPanelCollapsed ? 'App-image-container--collapsed' : ''}`}>
-            <div className="App-image-display">
+          {/* 画像が選択されている場合：画像表示 */}
+          {selectedFile && imageUrl && !isLoading && !error && (
+            <>
               <ImageDisplay 
                 imageUrl={imageUrl}
                 isLoading={isLoading}
@@ -310,7 +313,7 @@ function App() {
                 originalHeight={metadata?.height}
               />
               
-              {/* 折りたたみトグルボタン */}
+              {/* 右ペイン折りたたみトグルボタン */}
               <button 
                 className={`App-info-toggle ${isInfoPanelCollapsed ? 'App-info-toggle--collapsed' : ''}`}
                 onClick={() => setIsInfoPanelCollapsed(!isInfoPanelCollapsed)}
@@ -322,28 +325,41 @@ function App() {
                   {isInfoPanelCollapsed ? '◀' : '▶'}
                 </span>
               </button>
+            </>
+          )}
+
+          {/* 画像が選択されていない場合：ファイル選択画面 */}
+          {!selectedFile && !isLoading && !error && (
+            <div className="App-file-selector-container">
+              <FileSelector 
+                onFileSelect={handleFileSelect}
+                disabled={isLoading}
+              />
             </div>
-            
-            {!isInfoPanelCollapsed && (
-              <div className="App-image-info" id="image-info-panel">
-                <ImageInfo metadata={metadata} />
-                <button 
-                  className="App-new-image-button"
-                  onClick={() => setAppState({
-                    selectedFile: null,
-                    imageUrl: null,
-                    metadata: null,
-                    isLoading: false,
-                    error: null
-                  })}
-                >
-                  新しい画像を選択
-                </button>
-              </div>
-            )}
+          )}
+        </div>
+        
+        {/* 右ペイン（画像情報） */}
+        {selectedFile && imageUrl && !isLoading && !error && !isInfoPanelCollapsed && (
+          <div className="App-image-info" id="image-info-panel">
+            <ImageInfo metadata={metadata} />
+            <button 
+              className="App-new-image-button"
+              onClick={() => setAppState({
+                selectedFile: null,
+                imageUrl: null,
+                metadata: null,
+                isLoading: false,
+                error: null
+              })}
+            >
+              新しい画像を選択
+            </button>
           </div>
-        </main>
-      )}
+        )}
+      </main>
+
+
     </div>
   );
 }

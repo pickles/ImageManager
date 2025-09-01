@@ -1,6 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import App from '../../App';
+
+// DirectoryBrowserのモック
+vi.mock('../../components/DirectoryBrowser', () => ({
+  DirectoryBrowser: () => (
+    <div data-testid="directory-browser">Directory Browser</div>
+  )
+}));
 
 describe('App', () => {
   describe('初期状態（画像未選択）', () => {
@@ -10,9 +17,12 @@ describe('App', () => {
       // FileSelector コンポーネントが表示される
       expect(screen.getByText('画像ファイルを選択')).toBeInTheDocument();
       
-      // メインコンテナが適切なクラスを持つ
+      // DirectoryBrowser も表示される
+      expect(screen.getByTestId('directory-browser')).toBeInTheDocument();
+      
+      // メインコンテナが適切なクラスを持つ（DirectoryBrowser統合レイアウト）
       const mainElement = screen.getByRole('main');
-      expect(mainElement).toHaveClass('App-main--file-selector');
+      expect(mainElement).toHaveClass('App-main--with-directory-browser');
     });
 
     it('画像表示や情報コンポーネントは表示されない', () => {
@@ -43,10 +53,10 @@ describe('App', () => {
       const appContainer = document.querySelector('.App');
       expect(appContainer).toBeInTheDocument();
       
-      // メインコンテンツエリア
+      // メインコンテンツエリア（DirectoryBrowser統合レイアウト）
       const mainElement = screen.getByRole('main');
       expect(mainElement).toHaveClass('App-main');
-      expect(mainElement).toHaveClass('App-main--file-selector');
+      expect(mainElement).toHaveClass('App-main--with-directory-browser');
     });
 
     it('フルスクリーンアプリケーションレイアウトになっている', () => {

@@ -49,7 +49,27 @@ cd ImageManager
 
 # 依存関係のインストール
 npm install
+
+# 設定ファイルのセットアップ
+npm run setup
 ```
+
+### 画像ディレクトリの設定
+
+**方法1: 環境変数を使用（推奨）**
+
+```bash
+# Windows
+set IMAGE_DIRS=C:\MyImages;D:\Photos;./test-data/images
+npm run dev
+
+# macOS/Linux
+IMAGE_DIRS="/Users/YourName/Pictures:/path/to/images:./test-data/images" npm run dev
+```
+
+**方法2: 設定ファイルを編集**
+
+`server/config/directories.ts` を開いて、`candidateDirs` 配列を実際の画像ディレクトリパスに変更してください。
 
 ### 開発
 

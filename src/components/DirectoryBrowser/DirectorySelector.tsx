@@ -14,6 +14,11 @@ export const DirectorySelector: React.FC<DirectorySelectorProps> = ({
   selectedDirectory,
   disabled = false
 }) => {
+  // デバッグ用ログ
+  console.log('DirectorySelector rendered with props:', {
+    selectedDirectory,
+    disabled
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [directoryService] = useState(() => new DirectoryService());
@@ -30,7 +35,10 @@ export const DirectorySelector: React.FC<DirectorySelectorProps> = ({
       const directoryPath = await directoryService.selectDirectory();
       
       if (directoryPath) {
-        onDirectorySelect(directoryPath);
+        const directoryHandle = directoryService.getCurrentDirectoryHandle();
+        if (directoryHandle) {
+          onDirectorySelect(directoryPath, directoryHandle);
+        }
       }
     } catch (err) {
       if (err instanceof DirectoryServiceError) {
@@ -111,13 +119,26 @@ export const DirectorySelector: React.FC<DirectorySelectorProps> = ({
       )}
 
       {/* ブラウザサポート情報 */}
-      {!directoryService.isSupported() && (
+      {!directoryService.isSupported() && !import.meta.env.DEV && (
         <div className="directory-selector__unsupported" role="alert">
           <span className="directory-selector__warning-icon" aria-hidden="true">
             ℹ️
           </span>
           <span className="directory-selector__unsupported-message">
             ディレクトリ選択機能を使用するには、Chrome、Edge、またはOpera の最新版が必要です。
+            また、localhost以外からアクセスする場合はHTTPS接続が必要です。
+          </span>
+        </div>
+      )}
+
+      {/* 開発環境での情報表示 */}
+      {import.meta.env.DEV && (
+        <div className="directory-selector__dev-info">
+          <span className="directory-selector__info-icon" aria-hidden="true">
+            🔧
+          </span>
+          <span className="directory-selector__dev-message">
+            開発環境: 固定ディレクトリを使用中
           </span>
         </div>
       )}

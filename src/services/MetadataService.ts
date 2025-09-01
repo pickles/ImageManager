@@ -13,7 +13,20 @@ export class MetadataService implements IMetadataService {
    */
   async extractMetadata(file: File): Promise<ImageMetadata> {
     try {
-      const dimensions = await this.getImageDimensions(file);
+      let dimensions: { width: number; height: number };
+      
+      // APIファイルの場合は、画像サイズ取得をスキップしてデフォルト値を使用
+      if ((file as any)._isApiFile) {
+        console.log('APIファイルのため、画像サイズ取得をスキップします:', file.name);
+        dimensions = { width: 1024, height: 1024 }; // デフォルト値
+      } else {
+        try {
+          dimensions = await this.getImageDimensions(file);
+        } catch (dimensionError) {
+          console.warn('画像サイズの取得に失敗しました。デフォルト値を使用します:', dimensionError);
+          dimensions = { width: 0, height: 0 };
+        }
+      }
       
       return {
         fileName: file.name,
@@ -55,19 +68,46 @@ export class MetadataService implements IMetadataService {
   async getImageDimensions(file: File): Promise<{ width: number; height: number }> {
     return new Promise((resolve, reject) => {
       const img = new Image();
-      const url = URL.createObjectURL(file);
+      let url: string;
+
+      // APIファイルの場合は直接URLを使用
+      if ((file as any)._isApiFile && (file as any)._apiUrl) {
+        url = (file as any)._apiUrl;
+        // CORS対応
+        img.crossOrigin = 'anonymous';
+      } else {
+        url = URL.createObjectURL(file);
+      }
+
+      // タイムアウト設定（10秒）
+      const timeout = setTimeout(() => {
+        // APIファイルでない場合のみURLを解放
+        if (!(file as any)._isApiFile) {
+          URL.revokeObjectURL(url);
+        }
+        reject(new Error('画像の読み込みがタイムアウトしました'));
+      }, 10000);
 
       img.onload = () => {
-        URL.revokeObjectURL(url);
+        clearTimeout(timeout);
+        // APIファイルでない場合のみURLを解放
+        if (!(file as any)._isApiFile) {
+          URL.revokeObjectURL(url);
+        }
         resolve({
           width: img.naturalWidth,
           height: img.naturalHeight,
         });
       };
 
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        reject(new Error('画像の読み込みに失敗しました'));
+      img.onerror = (error) => {
+        clearTimeout(timeout);
+        // APIファイルでない場合のみURLを解放
+        if (!(file as any)._isApiFile) {
+          URL.revokeObjectURL(url);
+        }
+        console.error('画像読み込みエラー:', error, 'URL:', url);
+        reject(new Error(`画像の読み込みに失敗しました: ${url}`));
       };
 
       img.src = url;

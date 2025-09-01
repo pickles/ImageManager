@@ -30,7 +30,21 @@ export class FileService implements IFileService {
         throw new Error(`サポートされていないファイル形式です: ${file.type}`);
       }
 
-      // ファイルが実際に画像かどうかをチェック
+      // APIファイルの場合は、ファイル名の拡張子でも検証
+      if ((file as any)._isApiFile) {
+        const fileName = file.name.toLowerCase();
+        const supportedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+        const hasValidExtension = supportedExtensions.some(ext => fileName.endsWith(ext));
+        
+        if (!hasValidExtension) {
+          throw new Error(`サポートされていないファイル拡張子です: ${file.name}`);
+        }
+        
+        // APIファイルの場合は拡張子チェックで十分とする
+        return true;
+      }
+
+      // 通常のファイルの場合は画像として読み込めるかチェック
       const isValidImage = await this.verifyImageFile(file);
       if (!isValidImage) {
         throw new Error('有効な画像ファイルではありません');
@@ -39,7 +53,7 @@ export class FileService implements IFileService {
       return true;
     } catch (error) {
       console.error('ファイルバリデーションエラー:', error);
-      return false;
+      throw error; // エラーを再スローして呼び出し元で処理
     }
   }
 
@@ -50,6 +64,12 @@ export class FileService implements IFileService {
    */
   createImageUrl(file: File): string {
     try {
+      // APIファイルの場合は直接URLを返す
+      if ((file as any)._isApiFile && (file as any)._apiUrl) {
+        console.log('APIファイルのURL使用:', (file as any)._apiUrl);
+        return (file as any)._apiUrl;
+      }
+      
       return URL.createObjectURL(file);
     } catch (error) {
       console.error('画像URL作成エラー:', error);
@@ -63,6 +83,7 @@ export class FileService implements IFileService {
    */
   revokeImageUrl(url: string): void {
     try {
+      // APIファイルのURLは解放しない
       if (url && url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
       }
@@ -88,15 +109,28 @@ export class FileService implements IFileService {
   private async verifyImageFile(file: File): Promise<boolean> {
     return new Promise((resolve) => {
       const img = new Image();
-      const url = URL.createObjectURL(file);
+      let url: string;
+
+      // APIファイルの場合は直接URLを使用
+      if ((file as any)._isApiFile && (file as any)._apiUrl) {
+        url = (file as any)._apiUrl;
+      } else {
+        url = URL.createObjectURL(file);
+      }
 
       img.onload = () => {
-        URL.revokeObjectURL(url);
+        // APIファイルでない場合のみURLを解放
+        if (!(file as any)._isApiFile) {
+          URL.revokeObjectURL(url);
+        }
         resolve(true);
       };
 
       img.onerror = () => {
-        URL.revokeObjectURL(url);
+        // APIファイルでない場合のみURLを解放
+        if (!(file as any)._isApiFile) {
+          URL.revokeObjectURL(url);
+        }
         resolve(false);
       };
 
