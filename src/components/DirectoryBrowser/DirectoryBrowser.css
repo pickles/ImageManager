@@ -98,6 +98,15 @@
     width: 350px;
     min-width: 300px;
     max-width: 500px;
+    position: relative;
+    transform: none;
+    transition: none;
+  }
+  
+  .directory-browser--collapsed {
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
   }
 }
 
@@ -106,6 +115,15 @@
   .directory-browser {
     width: 300px;
     min-width: 250px;
+    position: relative;
+    transform: none;
+    transition: none;
+  }
+  
+  .directory-browser--collapsed {
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
   }
 }
 
@@ -116,28 +134,69 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 100vh;
     z-index: 1000;
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-right: none;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.5);
   }
   
   .directory-browser--expanded {
     transform: translateX(0);
   }
+  
+  .directory-browser--collapsed {
+    transform: translateX(-100%);
+  }
 
   .directory-browser__content {
     height: 100vh;
+    width: 85%;
+    max-width: 400px;
+    background-color: #f8f9fa;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   }
 
   .directory-browser__selector-section {
     padding: 20px 16px;
+    position: relative;
+  }
+  
+  /* モバイル用閉じるボタン */
+  .directory-browser__close-button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+  
+  .directory-browser__close-button:hover {
+    background-color: #e9ecef;
+    color: #495057;
+  }
+  
+  .directory-browser__close-button:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
   }
 
   .directory-browser__error {
     margin: 8px 16px 16px;
+  }
+  
+  /* モバイルでのスクロール改善 */
+  .directory-browser__file-list-section {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

@@ -1,7 +1,7 @@
 /**
  * DirectoryBrowser - メインコンテナコンポーネント
  * 左ペイン全体の管理と子コンポーネントの統合を担当
- * 要件: 1.1, 2.1, 2.5, 3.1, 3.3, 3.4, 4.1, 6.5
+ * 要件: 1.1, 2.1, 2.5, 3.1, 3.3, 3.4, 4.1, 5.1, 5.2, 5.3, 5.4, 5.5, 6.5
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
@@ -26,6 +26,9 @@ const DirectoryBrowser: React.FC<DirectoryBrowserProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>(SortOption.CREATED_DATE);
   const [sortOrder, setSortOrder] = useState<SortOrder>(SortOrder.DESC);
+
+  // レスポンシブ対応の状態管理（要件5.1, 5.2, 5.5）
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   // DirectoryService インスタンス
   const [directoryService] = useState(() => new DirectoryService());
@@ -104,13 +107,91 @@ const DirectoryBrowser: React.FC<DirectoryBrowserProps> = ({
     setError(null);
   }, []);
 
+  // 画面サイズ変更の監視（要件5.5）
+  useEffect(() => {
+    const handleResize = () => {
+      const newIsMobile = window.innerWidth <= 768;
+      setIsMobile(newIsMobile);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // 折りたたみ状態が変更された時の処理（要件4.1）
   useEffect(() => {
     // 折りたたみ状態の変更時に特別な処理が必要な場合はここに実装
     // 現在は特に処理なし
   }, [isCollapsed]);
 
-  return (
+  // モバイル用のコンテンツ（要件5.1, 5.2）
+  const renderMobileContent = () => (
+    <div 
+      className={`directory-browser ${className} ${!isCollapsed ? 'directory-browser--expanded' : 'directory-browser--collapsed'}`}
+      role="navigation"
+      aria-label="ディレクトリブラウザ"
+    >
+      <div className="directory-browser__content">
+        {/* ディレクトリ選択セクション */}
+        <div className="directory-browser__selector-section">
+          {/* モバイル用閉じるボタン */}
+          <button
+            className="directory-browser__close-button"
+            onClick={onToggleCollapse}
+            aria-label="ディレクトリブラウザを閉じる"
+            type="button"
+          >
+            ×
+          </button>
+          
+          <DirectorySelector
+            onDirectorySelect={handleDirectorySelect}
+            selectedDirectory={selectedDirectory}
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* ファイル一覧セクション */}
+        <div className="directory-browser__file-list-section">
+          <ImageFileList
+            files={sortedFiles}
+            selectedFile={selectedFile}
+            onFileSelect={handleFileSelect}
+            isLoading={isLoading}
+            error={error}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortChange={handleSortChange}
+          />
+        </div>
+
+        {/* エラー表示（グローバルエラー用） */}
+        {error && !isLoading && (
+          <div className="directory-browser__error" role="alert">
+            <div className="directory-browser__error-content">
+              <span className="directory-browser__error-icon" aria-hidden="true">
+                ⚠️
+              </span>
+              <span className="directory-browser__error-message">
+                {error}
+              </span>
+              <button
+                className="directory-browser__error-close"
+                onClick={clearError}
+                aria-label="エラーを閉じる"
+                type="button"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // デスクトップ・タブレット用のコンテンツ（要件5.3, 5.4）
+  const renderDesktopContent = () => (
     <CollapsiblePanel
       isCollapsed={isCollapsed}
       onToggle={onToggleCollapse}
@@ -166,6 +247,9 @@ const DirectoryBrowser: React.FC<DirectoryBrowserProps> = ({
       </div>
     </CollapsiblePanel>
   );
+
+  // レスポンシブ対応（要件5.1, 5.2, 5.3, 5.4, 5.5）
+  return isMobile ? renderMobileContent() : renderDesktopContent();
 };
 
 export default DirectoryBrowser;

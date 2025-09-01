@@ -59,6 +59,7 @@
   height: 100vh;
 }
 
+/* DirectoryBrowser統合時のレイアウト */
 .App-image-container {
   display: grid;
   grid-template-columns: 1fr 400px;
@@ -69,6 +70,42 @@
 
 .App-image-container--collapsed {
   grid-template-columns: 1fr 0px;
+}
+
+/* DirectoryBrowser統合時のCSS Grid レイアウト（要件5.1, 5.2, 5.3, 5.4） */
+.App-main--with-directory-browser {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "directory main info";
+  height: 100vh;
+  width: 100vw;
+  gap: 0;
+  padding: 0;
+}
+
+.App-main--with-directory-browser .App-directory-browser {
+  grid-area: directory;
+}
+
+.App-main--with-directory-browser .App-image-display {
+  grid-area: main;
+}
+
+.App-main--with-directory-browser .App-image-info {
+  grid-area: info;
+}
+
+/* DirectoryBrowser折りたたみ状態 */
+.App-main--with-directory-browser.App-main--directory-collapsed {
+  grid-template-columns: 0 1fr auto;
+}
+
+.App-main--with-directory-browser.App-main--info-collapsed {
+  grid-template-columns: auto 1fr 0;
+}
+
+.App-main--with-directory-browser.App-main--both-collapsed {
+  grid-template-columns: 0 1fr 0;
 }
 
 .App-image-display {
@@ -231,27 +268,79 @@
 }
 
 /* レスポンシブデザイン */
+
+/* デスクトップ: 1025px以上（要件5.4） */
+@media (min-width: 1025px) {
+  .App-main--with-directory-browser {
+    grid-template-columns: 350px 1fr 400px;
+  }
+  
+  .App-main--with-directory-browser.App-main--directory-collapsed {
+    grid-template-columns: 0 1fr 400px;
+  }
+  
+  .App-main--with-directory-browser.App-main--info-collapsed {
+    grid-template-columns: 350px 1fr 0;
+  }
+  
+  .App-main--with-directory-browser.App-main--both-collapsed {
+    grid-template-columns: 0 1fr 0;
+  }
+}
+
+/* タブレット: 769px - 1024px（要件5.3） */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .App-main--with-directory-browser {
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: 1fr auto;
+    grid-template-areas: 
+      "directory main"
+      "info info";
+  }
+  
+  .App-main--with-directory-browser.App-main--directory-collapsed {
+    grid-template-columns: 0 1fr;
+    grid-template-areas: 
+      "main main"
+      "info info";
+  }
+  
+  .App-main--with-directory-browser.App-main--info-collapsed {
+    grid-template-areas: 
+      "directory main"
+      "directory main";
+    grid-template-rows: 1fr;
+  }
+  
+  .App-main--with-directory-browser .App-image-info {
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+    max-height: 300px;
+  }
+}
+
+/* 従来のレイアウト（DirectoryBrowserなし） */
 @media (max-width: 1024px) {
-  .App-image-container {
+  .App-image-container:not(.App-main--with-directory-browser) {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr auto;
   }
   
-  .App-image-container--collapsed {
+  .App-image-container--collapsed:not(.App-main--with-directory-browser) {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 0px;
   }
   
-  .App-image-display {
+  .App-image-display:not(.App-main--with-directory-browser .App-image-display) {
     padding: 1rem;
     height: calc(100vh - 300px); /* 情報パネル分の高さを引く */
   }
   
-  .App-image-container--collapsed .App-image-display {
+  .App-image-container--collapsed .App-image-display:not(.App-main--with-directory-browser .App-image-display) {
     height: 100vh;
   }
   
-  .App-image-info {
+  .App-image-info:not(.App-main--with-directory-browser .App-image-info) {
     border-left: none;
     border-top: 1px solid #e2e8f0;
     max-height: 300px;
@@ -260,17 +349,18 @@
     transition: max-height 0.3s ease;
   }
   
-  .App-info-toggle {
+  .App-info-toggle:not(.App-main--with-directory-browser .App-info-toggle) {
     top: 1rem;
     right: 1rem;
     transform: none;
   }
   
-  .App-info-toggle:hover {
+  .App-info-toggle:hover:not(.App-main--with-directory-browser .App-info-toggle:hover) {
     transform: scale(1.05);
   }
 }
 
+/* モバイル: 768px以下（要件5.1, 5.2） */
 @media (max-width: 768px) {
   .App-main {
     padding: 0.5rem;
@@ -290,18 +380,67 @@
     padding: 1rem;
   }
   
-  .App-image-display {
+  /* DirectoryBrowser統合時のモバイルレイアウト */
+  .App-main--with-directory-browser {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    grid-template-areas: 
+      "main"
+      "info";
+  }
+  
+  .App-main--with-directory-browser.App-main--info-collapsed {
+    grid-template-areas: "main";
+    grid-template-rows: 1fr;
+  }
+  
+  /* DirectoryBrowserはオーバーレイ表示 */
+  .App-main--with-directory-browser .App-directory-browser {
+    grid-area: unset;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .App-main--with-directory-browser .App-directory-browser--expanded {
+    transform: translateX(0);
+  }
+  
+  /* 従来のレイアウト（DirectoryBrowserなし） */
+  .App-image-display:not(.App-main--with-directory-browser .App-image-display) {
     padding: 0.5rem;
     height: calc(100vh - 250px); /* 情報パネル分の高さを引く */
   }
   
-  .App-image-container--collapsed .App-image-display {
+  .App-image-container--collapsed .App-image-display:not(.App-main--with-directory-browser .App-image-display) {
     height: 100vh;
   }
   
-  .App-image-info {
+  .App-image-info:not(.App-main--with-directory-browser .App-image-info) {
     padding: 1rem;
     max-height: 250px;
+  }
+  
+  /* DirectoryBrowser統合時の画像表示エリア */
+  .App-main--with-directory-browser .App-image-display {
+    padding: 0.5rem;
+    height: calc(100vh - 250px);
+  }
+  
+  .App-main--with-directory-browser.App-main--info-collapsed .App-image-display {
+    height: 100vh;
+  }
+  
+  .App-main--with-directory-browser .App-image-info {
+    padding: 1rem;
+    max-height: 250px;
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
   }
   
   .App-new-image-button {
